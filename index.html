@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="space">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>С Днём Рождения, Мамочка!</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Tone.js для генерации звуков и музыки -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Montserrat:wght@400;500;600;700&family=Pacifico&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #fce7f3 0%, #e0e7ff 100%);
+            --card-bg: rgba(255, 255, 255, 0.7);
+            --card-border: rgba(255, 255, 255, 0.5);
+            --text-main: #374151; /* gray-700 */
+            --text-title: #1f2937; /* gray-800 */
+            --stars-opacity: 0;
+        }
+
+        [data-theme="dark"] {
+            --bg-gradient: linear-gradient(135deg, #111827 0%, #1f2937 100%);
+            --card-bg: rgba(31, 41, 55, 0.7);
+            --card-border: rgba(55, 65, 81, 0.5);
+            --text-main: #d1d5db; /* gray-300 */
+            --text-title: #f3f4f6; /* gray-100 */
+            --stars-opacity: 0;
+        }
+
+        [data-theme="space"] {
+            --bg-gradient: radial-gradient(circle at center, #1b0033 0%, #00001a 100%);
+            --card-bg: rgba(15, 23, 42, 0.6);
+            --card-border: rgba(139, 92, 246, 0.3);
+            --text-main: #e2e8f0; /* slate-200 */
+            --text-title: #ffffff;
+            --stars-opacity: 1;
+        }
+
+        /* Кастомный красивый черный курсор */
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: var(--bg-gradient);
+            min-height: 100vh;
+            overflow-x: hidden;
+            margin: 0;
+            color: var(--text-main);
+            transition: background 0.8s ease, color 0.5s ease;
+            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24"><path fill="%23000000" stroke="%23ffffff" stroke-width="1.5" d="M4.5 3.5l14.1 10.8-6.1 1-3.8 7.8-3-1.5 3.8-7.8-4.8 4.8z"/></svg>'), auto;
+        }
+
+        /* Чтобы курсор работал и на ссылках/кнопках */
+        a, button, .cursor-pointer, .gift-box, .theme-btn {
+            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24"><path fill="%23000000" stroke="%23ffffff" stroke-width="1.5" d="M4.5 3.5l14.1 10.8-6.1 1-3.8 7.8-3-1.5 3.8-7.8-4.8 4.8z"/></svg>'), pointer !important;
+        }
+
+        .handwriting { font-family: 'Caveat', cursive; }
+        .pacifico { font-family: 'Pacifico', cursive; }
+
+        /* Эффект стекла для карточек */
+        .glass-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--card-border);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.15);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s ease, background 0.5s ease, border 0.5s ease;
+        }
+
+        .glass-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 40px 0 rgba(0, 0, 0, 0.25);
+        }
+
+        .text-title { color: var(--text-title); }
+
+        /* Звездный фон для космической темы */
+        #stars-container {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            opacity: var(--stars-opacity);
+            transition: opacity 1s ease;
+            background: transparent;
+        }
+
+        .star {
+            position: absolute;
+            background-color: white;
+            border-radius: 50%;
+            animation: twinkle infinite alternate;
+        }
+
+        @keyframes twinkle {
+            0% { opacity: 0.2; transform: scale(0.8); }
+            100% { opacity: 1; transform: scale(1.2); box-shadow: 0 0 5px white; }
+        }
+
+        /* Интро экран */
+        #intro-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle, #4c1d95, #000000);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            transition: opacity 1s ease, visibility 1s ease;
+        }
+
+        .gift-box {
+            font-size: 8rem;
+            animation: bounce 2s infinite, glow 2s infinite alternate;
+            transition: transform 0.2s;
+            user-select: none;
+            filter: drop-shadow(0 0 20px rgba(255,255,255,0.4));
+        }
+
+        .gift-box:active { transform: scale(0.85); }
+
+        .click-text {
+            color: #fce7f3;
+            font-size: 2.5rem;
+            margin-top: 20px;
+            text-shadow: 0 2px 10px rgba(255,255,255,0.5);
+            animation: pulseText 1.5s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0) rotate(0deg); }
+            40% { transform: translateY(-30px) rotate(-5deg); }
+            60% { transform: translateY(-15px) rotate(5deg); }
+        }
+
+        @keyframes pulseText {
+            0% { opacity: 0.7; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.05); }
+            100% { opacity: 0.7; transform: scale(1); }
+        }
+
+        .hidden-content { opacity: 0; visibility: hidden; }
+
+        /* Настройка цветов для карточек (бордюры адаптируются к теме) */
+        .color-blue { border-top: 5px solid #3b82f6; }
+        .text-blue { color: #60a5fa; text-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+        
+        .color-orange { border-top: 5px solid #f97316; }
+        .text-orange { color: #fb923c; text-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+        
+        .color-silver { 
+            border-top: 5px solid transparent;
+            border-image: linear-gradient(to right, #9ca3af, #f3f4f6, #9ca3af) 1;
+        }
+        .text-silver {
+            background: linear-gradient(to right, #9ca3af, #f9fafb, #9ca3af);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: bold;
+        }
+
+        .color-green { border-top: 5px solid #22c55e; }
+        .text-green { color: #4ade80; text-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+
+        .color-purple { border-top: 5px solid #a855f7; }
+        .text-purple { color: #c084fc; text-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+        
+        .color-red { border-top: 5px solid #ef4444; }
+        .text-red { color: #f87171; text-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+
+        /* Конфетти */
+        #confetti-canvas {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 50;
+        }
+
+        /* Переключатель тем */
+        .theme-switcher {
+            position: fixed;
+            top: 20px; right: 20px;
+            z-index: 90;
+            display: flex;
+            gap: 8px;
+            background: rgba(0,0,0,0.3);
+            padding: 8px;
+            border-radius: 30px;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255,255,255,0.1);
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 1s ease;
+        }
+        
+        .theme-btn {
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            border: 2px solid transparent;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 1.2rem;
+            transition: all 0.2s ease;
+        }
+        .theme-btn:hover { transform: scale(1.1); }
+        .theme-btn.active { border-color: white; box-shadow: 0 0 10px rgba(255,255,255,0.5); }
+    </style>
+</head>
+<body>
+
+    <!-- Звездный фон (виден только в теме Space) -->
+    <div id="stars-container"></div>
+
+    <!-- Переключатель тем -->
+    <div id="theme-switcher" class="theme-switcher">
+        <button class="theme-btn" data-theme-value="light" title="Светлая тема" style="background: #fce7f3;">☀️</button>
+        <button class="theme-btn" data-theme-value="dark" title="Темная тема" style="background: #1f2937;">🌙</button>
+        <button class="theme-btn active" data-theme-value="space" title="Космос" style="background: #1b0033;">🚀</button>
+    </div>
+
+    <!-- Intro Screen -->
+    <div id="intro-screen">
+        <div class="handwriting text-white text-4xl md:text-6xl mb-8 text-center px-4 drop-shadow-lg">Для самой лучшей мамы на свете...</div>
+        <div class="gift-box" onclick="openGift()" title="Нажми на меня!">🎁</div>
+        <div class="click-text handwriting">Нажми на подарок!</div>
+    </div>
+
+    <!-- Canvas for Confetti -->
+    <canvas id="confetti-canvas"></canvas>
+
+    <!-- Main Content -->
+    <main id="main-content" class="hidden-content pt-12 pb-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto relative z-10">
+        
+        <header class="text-center mb-16 mt-12">
+            <h1 class="text-5xl md:text-7xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-purple-400 to-indigo-400 mb-4 drop-shadow-sm pacifico tracking-wide">
+                С Днём Рождения!
+            </h1>
+            <p class="handwriting text-4xl md:text-6xl text-title mt-4 font-bold drop-shadow-md">Тебе уже 46! 🎉</p>
+            <p class="text-xl mt-6 max-w-3xl mx-auto opacity-90 leading-relaxed font-medium">
+                Мы все тебя очень сильно любим и хотим сказать несколько теплых слов в этот прекрасный день.
+            </p>
+        </header>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            
+            <!-- Женя (Синий) -->
+            <div class="glass-card rounded-3xl p-8 color-blue">
+                <div class="flex items-center mb-6 border-b border-gray-500/20 pb-4">
+                    <div class="w-12 h-12 rounded-full bg-blue-500/20 flex items-center justify-center text-2xl shadow-sm border border-blue-500/30">👦</div>
+                    <h2 class="ml-4 text-3xl handwriting text-blue font-bold tracking-wider">От Жени</h2>
+                </div>
+                <p class="text-lg leading-relaxed font-medium">
+                    Мам, поздравляю с днем рождения! Желаю здоровья, счастья и чтобы Максим давал тебе спать почаще 💙
+                </p>
+            </div>
+
+            <!-- Бабуля, Дед (Рыжий) -->
+            <div class="glass-card rounded-3xl p-8 color-orange">
+                <div class="flex items-center mb-6 border-b border-gray-500/20 pb-4">
+                    <div class="w-12 h-12 rounded-full bg-orange-500/20 flex items-center justify-center text-2xl shadow-sm border border-orange-500/30">👵👴</div>
+                    <h2 class="ml-4 text-3xl handwriting text-orange font-bold tracking-wider">От Бабули и Деда</h2>
+                </div>
+                <p class="text-lg leading-relaxed font-medium">
+                    Дорогая наша Танюша, поздравляем 💐 тебя с прекрасным днём, с днём рождения. Будь всегда на позитиве, пусть твои глаза искрятся от счастливой жизни, пусть дети Ваши вам помогают по "хозяйству". Любим, целуем, обнимаем! 🧡
+                </p>
+            </div>
+
+            <!-- Папа (Серебристый) -->
+            <div class="glass-card rounded-3xl p-8 color-silver md:col-span-2 lg:col-span-1 shadow-lg relative overflow-hidden group">
+                <div class="absolute -top-4 -right-4 p-4 opacity-10 text-8xl group-hover:scale-110 transition-transform duration-500">👑</div>
+                <div class="flex items-center mb-6 border-b border-gray-500/20 pb-4 relative z-10">
+                    <div class="w-12 h-12 rounded-full bg-gray-500/20 flex items-center justify-center text-2xl shadow-sm border border-gray-400/50">👨</div>
+                    <h2 class="ml-4 text-4xl handwriting text-silver font-bold tracking-wider">От Папы</h2>
+                </div>
+                <div class="text-lg leading-relaxed space-y-3 font-medium relative z-10">
+                    <p>Нашу Любимую Маму поздравляю с днем рождения!</p>
+                    <p>Желаю ей чтобы она оставалась:</p>
+                    <ul class="pl-4 space-y-1">
+                        <li><span class="font-bold text-title">Самой красивой!</span> ✨</li>
+                        <li><span class="font-bold text-title">Самой молодой!</span> 🌸</li>
+                        <li><span class="font-bold text-title">Самой счастливой!</span> 💖</li>
+                        <li><span class="font-bold text-title">Самой любимой!</span> 🥰</li>
+                        <li><span class="font-bold text-title">Самой здоровой!</span> 💪</li>
+                    </ul>
+                    <p>Чтобы каждый день был самым интересным и веселым!</p>
+                    <p>Чтобы она побольше отдыхала и нас кормила! 🍽️</p>
+                    <p>Чтобы не сильно храпела. 🤫</p>
+                    <p>Чтобы стала самой стройной мамой на свете!</p>
+                    <div class="mt-4 p-3 bg-white/10 rounded-xl border border-white/20 text-center">
+                        <span class="text-xl font-bold text-title">Тебе уже 46 лет 😱<br><span class="text-2xl mt-1 block">УРА! 🥂</span></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Бабушка (Зеленый) -->
+            <div class="glass-card rounded-3xl p-8 color-green">
+                <div class="flex items-center mb-6 border-b border-gray-500/20 pb-4">
+                    <div class="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center text-2xl shadow-sm border border-green-500/30">👵</div>
+                    <h2 class="ml-4 text-3xl handwriting text-green font-bold tracking-wider">От Бабушки</h2>
+                </div>
+                <p class="text-lg leading-relaxed font-medium">
+                    Моя дорогая дочь с днём рождения горжусь тобой каждый день 🥰 💚
+                </p>
+            </div>
+
+            <!-- Папка "Родственники" (Фиолетовый) - объединяет 4 поздравления -->
+            <div class="glass-card rounded-3xl p-8 color-purple md:col-span-2 shadow-lg">
+                <div class="flex items-center mb-6 border-b border-purple-500/30 pb-4">
+                    <div class="w-12 h-12 rounded-full bg-purple-500/20 flex items-center justify-center text-2xl shadow-sm border border-purple-500/30">👨‍👩‍👧‍👦</div>
+                    <h2 class="ml-4 text-4xl handwriting text-purple font-bold tracking-wider">От Родственников</h2>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                    <!-- Сестра Наташа -->
+                    <div class="bg-white/5 p-4 rounded-2xl border border-white/10 hover:bg-white/10 transition">
+                        <h3 class="font-bold text-purple mb-2 flex items-center gap-2"><span>👱‍♀️</span> Сестра Наташа</h3>
+                        <p class="font-medium">Пусть желания исполняются как в сказке 💜</p>
+                    </div>
+                    
+                    <!-- Сестра Лена -->
+                    <div class="bg-white/5 p-4 rounded-2xl border border-white/10 hover:bg-white/10 transition">
+                        <h3 class="font-bold text-purple mb-2 flex items-center gap-2"><span>👱‍♀️</span> Сестра Лена</h3>
+                        <p class="font-medium">Лучшую сестру на свете с днём рождения 💜</p>
+                    </div>
+
+                    <!-- Тётя Света -->
+                    <div class="bg-white/5 p-4 rounded-2xl border border-white/10 hover:bg-white/10 transition">
+                        <h3 class="font-bold text-purple mb-2 flex items-center gap-2"><span>👩</span> Тётя Света</h3>
+                        <p class="font-medium">С наилучшими пожеланиями в этот день тебе племянница 💜</p>
+                    </div>
+
+                    <!-- Брат -->
+                    <div class="bg-white/5 p-4 rounded-2xl border border-white/10 hover:bg-white/10 transition">
+                        <h3 class="font-bold text-purple mb-2 flex items-center gap-2"><span>👨</span> Брат</h3>
+                        <p class="font-medium">Пусть у тебя будет все хорошо 💜</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- ГЕНА (Особое поздравление в конце) -->
+            <div class="glass-card rounded-3xl p-10 color-red md:col-span-2 lg:col-span-3 shadow-2xl transform hover:scale-[1.02] transition-transform duration-500 mt-4 text-center relative overflow-hidden">
+                <!-- Декоративные сердечки на фоне -->
+                <div class="absolute -top-10 -left-10 text-9xl opacity-5">❤️</div>
+                <div class="absolute -bottom-10 -right-10 text-9xl opacity-5">❤️</div>
+                
+                <div class="inline-flex items-center justify-center mb-6">
+                    <div class="w-16 h-16 rounded-full bg-red-500/20 flex items-center justify-center text-3xl shadow-sm border border-red-500/40 animate-pulse">😎</div>
+                    <h2 class="ml-5 text-5xl handwriting text-red font-bold tracking-widest drop-shadow-md">От Гены</h2>
+                </div>
+                <div class="py-6">
+                    <p class="text-4xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-pink-500 pacifico tracking-wider leading-tight">
+                        Мы тебя любим! ❤️
+                    </p>
+                </div>
+            </div>
+
+        </div>
+        
+        <div class="mt-20 text-center pb-10">
+            <p class="handwriting text-4xl text-pink-500 font-bold drop-shadow-sm">С огромной любовью, твоя семья ❤️</p>
+        </div>
+    </main>
+
+    <script>
+        // --- Генерация звездного неба ---
+        const starsContainer = document.getElementById('stars-container');
+        for (let i = 0; i < 150; i++) {
+            const star = document.createElement('div');
+            star.classList.add('star');
+            star.style.width = `${Math.random() * 3 + 1}px`;
+            star.style.height = star.style.width;
+            star.style.left = `${Math.random() * 100}vw`;
+            star.style.top = `${Math.random() * 100}vh`;
+            star.style.animationDuration = `${Math.random() * 3 + 2}s`;
+            star.style.animationDelay = `${Math.random() * 2}s`;
+            starsContainer.appendChild(star);
+        }
+
+        // --- Логика переключения тем ---
+        const themeBtns = document.querySelectorAll('.theme-btn');
+        themeBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const theme = btn.getAttribute('data-theme-value');
+                document.documentElement.setAttribute('data-theme', theme);
+                
+                // Обновляем активную кнопку
+                themeBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            });
+        });
+
+        // --- Логика звука и музыки (Tone.js) ---
+        let audioContextStarted = false;
+        
+        async function setupAudio() {
+            if (audioContextStarted) return;
+            await Tone.start();
+            audioContextStarted = true;
+
+            // Звук взрыва/хлопка конфетти (Noise Synth)
+            const explosion = new Tone.NoiseSynth({
+                noise: { type: 'pink' },
+                envelope: { attack: 0.005, decay: 0.5, sustain: 0, release: 0.2 }
+            }).toDestination();
+            
+            // Фильтр для хлопка, чтобы звучало приятнее
+            const filter = new Tone.Filter(800, "lowpass").toDestination();
+            explosion.disconnect().connect(filter);
+            
+            explosion.triggerAttackRelease("8n"); // Хлопок!
+
+            // Фоновая музыка (Ненавязчивый арпеджиатор)
+            const synth = new Tone.PolySynth(Tone.Synth, {
+                oscillator: { type: "triangle" },
+                envelope: { attack: 0.5, decay: 1, sustain: 0.5, release: 2 }
+            }).toDestination();
+            
+            synth.volume.value = -18; // Тихая и спокойная
+
+            // Красивая и спокойная последовательность аккордов (Светлая и позитивная)
+            const chords = [
+                ["C4", "E4", "G4", "C5"],
+                ["F3", "A3", "C4", "F4"],
+                ["G3", "B3", "D4", "G4"],
+                ["C4", "E4", "G4", "B4"]
+            ];
+            
+            let chordIndex = 0;
+            
+            // Играем аккорды мягко каждые 2 секунды
+            Tone.Transport.scheduleRepeat((time) => {
+                let chord = chords[chordIndex % chords.length];
+                synth.triggerAttackRelease(chord, "1m", time);
+                chordIndex++;
+            }, "2m");
+
+            Tone.Transport.bpm.value = 90;
+            Tone.Transport.start();
+        }
+
+        // --- Логика Конфетти ---
+        const canvas = document.getElementById('confetti-canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        let confettiParticles = [];
+        let isConfettiActive = false;
+        const colors = ['#f43f5e', '#ec4899', '#d946ef', '#8b5cf6', '#3b82f6', '#0ea5e9', '#10b981', '#f59e0b', '#fbbf24'];
+
+        class ConfettiParticle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height - canvas.height;
+                this.size = Math.random() * 12 + 6; // Чуть крупнее
+                this.color = colors[Math.floor(Math.random() * colors.length)];
+                this.speedY = Math.random() * 4 + 2; // Чуть быстрее падает
+                this.speedX = Math.random() * 4 - 2;
+                this.rotation = Math.random() * 360;
+                this.rotationSpeed = Math.random() * 10 - 5;
+            }
+
+            update() {
+                this.y += this.speedY;
+                this.x += this.speedX;
+                this.rotation += this.rotationSpeed;
+
+                if (this.y > canvas.height) {
+                    this.y = -10;
+                    this.x = Math.random() * canvas.width;
+                }
+            }
+
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate((this.rotation * Math.PI) / 180);
+                ctx.fillStyle = this.color;
+                // Рисуем кружочки и квадратики
+                if (this.size % 2 > 1) {
+                    ctx.beginPath();
+                    ctx.arc(0, 0, this.size/2, 0, Math.PI * 2);
+                    ctx.fill();
+                } else {
+                    ctx.fillRect(-this.size / 2, -this.size / 2, this.size, this.size);
+                }
+                ctx.restore();
+            }
+        }
+
+        function createConfetti() {
+            for (let i = 0; i < 200; i++) {
+                confettiParticles.push(new ConfettiParticle());
+            }
+        }
+
+        function animateConfetti() {
+            if (!isConfettiActive) return;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (let i = 0; i < confettiParticles.length; i++) {
+                confettiParticles[i].update();
+                confettiParticles[i].draw();
+            }
+            requestAnimationFrame(animateConfetti);
+        }
+
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+
+        // --- Логика Интерактива (Открытие подарка) ---
+        function openGift() {
+            const introScreen = document.getElementById('intro-screen');
+            const mainContent = document.getElementById('main-content');
+            const themeSwitcher = document.getElementById('theme-switcher');
+            
+            // Включаем звук и музыку
+            setupAudio();
+
+            // Запускаем конфетти
+            isConfettiActive = true;
+            createConfetti();
+            animateConfetti();
+
+            // Плавное исчезновение интро
+            introScreen.style.opacity = '0';
+            setTimeout(() => {
+                introScreen.style.display = 'none';
+                
+                // Показываем основной контент и переключатель тем
+                mainContent.classList.remove('hidden-content');
+                mainContent.style.visibility = 'visible';
+                themeSwitcher.style.visibility = 'visible';
+                themeSwitcher.style.opacity = '1';
+                
+                let opacity = 0;
+                const fadeIn = setInterval(() => {
+                    if (opacity >= 1) {
+                        clearInterval(fadeIn);
+                    }
+                    mainContent.style.opacity = opacity;
+                    opacity += 0.05;
+                }, 30);
+                
+            }, 1000);
+            
+            // Затухание конфетти через 10 секунд
+            setTimeout(() => {
+               ConfettiParticle.prototype.update = function() {
+                    this.y += this.speedY;
+                    this.x += this.speedX;
+                    this.rotation += this.rotationSpeed;
+               };
+               
+               setTimeout(() => {
+                   isConfettiActive = false;
+                   ctx.clearRect(0, 0, canvas.width, canvas.height);
+               }, 6000);
+               
+            }, 10000);
+        }
+    </script>
+</body>
+</html>
